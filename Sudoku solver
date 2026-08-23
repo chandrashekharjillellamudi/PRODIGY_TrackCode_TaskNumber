@@ -1,0 +1,110 @@
+
+def print_grid(grid):
+    """Print the Sudoku grid in a readable format with box separators."""
+    for i in range(9):
+        if i % 3 == 0 and i != 0:
+            print("-" * 21)
+        row = ""
+        for j in range(9):
+            if j % 3 == 0 and j != 0:
+                row += "| "
+            row += str(grid[i][j]) if grid[i][j] != 0 else "."
+            row += " "
+        print(row)
+
+
+def find_empty_cell(grid):
+    """Find the next empty cell (represented by 0). Returns (row, col) or None."""
+    for r in range(9):
+        for c in range(9):
+            if grid[r][c] == 0:
+                return r, c
+    return None
+
+
+def is_valid(grid, row, col, num):
+    """Check if placing num at grid[row][col] violates Sudoku rules."""
+    # Check row
+    if num in grid[row]:
+        return False
+
+    # Check column
+    if num in (grid[r][col] for r in range(9)):
+        return False
+
+    # Check 3x3 box
+    box_row, box_col = 3 * (row // 3), 3 * (col // 3)
+    for r in range(box_row, box_row + 3):
+        for c in range(box_col, box_col + 3):
+            if grid[r][c] == num:
+                return False
+
+    return True
+
+
+def solve_sudoku(grid):
+    """Solve the Sudoku puzzle in place using backtracking. Returns True if solved."""
+    empty = find_empty_cell(grid)
+    if not empty:
+        return True  # No empty cells left — puzzle solved
+
+    row, col = empty
+
+    for num in range(1, 10):
+        if is_valid(grid, row, col, num):
+            grid[row][col] = num
+
+            if solve_sudoku(grid):
+                return True
+
+            grid[row][col] = 0  # Backtrack
+
+    return False  # Trigger backtracking
+
+
+def is_valid_initial_grid(grid):
+    """Check the starting grid doesn't already violate Sudoku rules."""
+    for r in range(9):
+        for c in range(9):
+            val = grid[r][c]
+            if val != 0:
+                grid[r][c] = 0
+                if not is_valid(grid, r, c, val):
+                    grid[r][c] = val
+                    return False
+                grid[r][c] = val
+    return True
+
+
+def main():
+    # 0 represents an empty cell
+    puzzle = [
+        [5, 3, 0, 0, 7, 0, 0, 0, 0],
+        [6, 0, 0, 1, 9, 5, 0, 0, 0],
+        [0, 9, 8, 0, 0, 0, 0, 6, 0],
+        [8, 0, 0, 0, 6, 0, 0, 0, 3],
+        [4, 0, 0, 8, 0, 3, 0, 0, 1],
+        [7, 0, 0, 0, 2, 0, 0, 0, 6],
+        [0, 6, 0, 0, 0, 0, 2, 8, 0],
+        [0, 0, 0, 4, 1, 9, 0, 0, 5],
+        [0, 0, 0, 0, 8, 0, 0, 7, 9]
+    ]
+
+    print("Unsolved Sudoku Puzzle:")
+    print_grid(puzzle)
+
+    if not is_valid_initial_grid(puzzle):
+        print("\nThe provided puzzle is invalid (violates Sudoku rules).")
+        return
+
+    print("\nSolving...\n")
+
+    if solve_sudoku(puzzle):
+        print("Solved Sudoku Puzzle:")
+        print_grid(puzzle)
+    else:
+        print("No solution exists for this puzzle.")
+
+
+if __name__ == "__main__":
+    main()
